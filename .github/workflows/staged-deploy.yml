@@ -1,10 +1,5 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
-
-# Controls when the workflow will run
+name: Staged Deployment
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
   pull_request:
@@ -15,13 +10,9 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-
   # Build the code
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
@@ -30,40 +21,43 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world!
 
-  # Build the code
   deployToDev:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    needs: [build]
     steps:
-      # Runs a single command using the runners shell
       - name: Deploy to Dev
         run: echo Deploy to Dev
 
-  # Build the code
+  deployToSbx1:
+    runs-on: ubuntu-latest
+    environment: sbx1
+    needs: [deployToDev]
+    steps:
+      - name: Deploy to Sbx1
+        run: echo Deploy to Sbx1
+
   deployToQA:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     environment: qa
     needs: [deployToDev]
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Runs a single command using the runners shell
-      - name: Deploy to Dev
+      - name: Deploy to QA
         run: echo Deploy to QA
 
-  # Build the code
+  deployToStage:
+    runs-on: ubuntu-latest
+    environment: stage
+    needs: [deployToQA]
+    steps:
+      - name: Deploy to Stage
+        run: echo Deploy to Stage
+
   deployToProd:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     environment: prod
     needs: [deployToQA]
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Runs a single command using the runners shell
       - name: Deploy to Dev
         run: echo Deploy to Prod
 
